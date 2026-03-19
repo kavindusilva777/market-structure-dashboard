@@ -16,6 +16,11 @@ import yfinance as yf
 import requests
 from datetime import datetime
 import time
+try:
+    from streamlit_autorefresh import st_autorefresh
+    HAS_AUTOREFRESH = True
+except ImportError:
+    HAS_AUTOREFRESH = False
 
 # ─── Page Config ──────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -731,11 +736,15 @@ def main():
         np_, nc, npct = fetch_yf_price("NQ=F")
         st.session_state.all_prices["NQ Futures"] = (np_, nc, npct, False)
 
-    # ── Auto-refresh every 10s — refetch in background, update session_state ──
-    if time.time() - st.session_state.last_refresh > 10:
+    # ── Auto-refresh every 30s using st_autorefresh (safe — preserves widget state) ──
+    # Falls back to a simple elapsed-time check if package not installed
+    if HAS_AUTOREFRESH:
+        st_autorefresh(interval=30000, key="dash_autorefresh")
+
+    # Refetch data when enough time has passed
+    if time.time() - st.session_state.last_refresh > 30:
         st.session_state.last_refresh = time.time()
         st.session_state.refresh_count += 1
-        # Clear cache then refetch all instruments fresh
         st.cache_data.clear()
         for inst_key, inst_cfg in INSTRUMENTS.items():
             st.session_state.all_candles[inst_key] = fetch_candles(inst_cfg["ticker"])
@@ -743,7 +752,6 @@ def main():
         st.session_state.all_prices["XAU/USD"] = (xp, xc, xpct, xl)
         np_, nc, npct = fetch_yf_price("NQ=F")
         st.session_state.all_prices["NQ Futures"] = (np_, nc, npct, False)
-        st.rerun()
 
     cfg   = INSTRUMENTS[st.session_state.instrument]
     theme = cfg["theme"]
@@ -850,8 +858,7 @@ def main():
       <div class="foot-r">Updated {now_str} · Cycle #{st.session_state.refresh_count}</div>
     </div>""", unsafe_allow_html=True)
 
-    time.sleep(1)
-    st.rerun()
+    # No aggressive rerun loop — st_autorefresh handles periodic refresh safely
 
 
 def _theme_vars(theme):
