@@ -712,6 +712,8 @@ def main():
         st.session_state.refresh_count = 0
     if "instrument" not in st.session_state:
         st.session_state.instrument = "XAU/USD"
+    if "radio_instrument" not in st.session_state:
+        st.session_state.radio_instrument = "XAU/USD"
     if "all_candles" not in st.session_state:
         st.session_state.all_candles = {}
     if "all_prices" not in st.session_state:
@@ -795,17 +797,19 @@ def main():
     with col_right:
         st.markdown("<div style='height:0.85rem'></div>", unsafe_allow_html=True)
         st.markdown("**Switch Instrument**")
-        choice = st.radio(
+
+        def _on_instrument_change():
+            # Called by Streamlit BEFORE the rerun — safe to update instrument here
+            st.session_state.instrument = st.session_state.radio_instrument
+
+        st.radio(
             label="instrument",
             options=list(INSTRUMENTS.keys()),
-            index=list(INSTRUMENTS.keys()).index(st.session_state.instrument),
+            key="radio_instrument",           # bound to session_state.radio_instrument
+            on_change=_on_instrument_change,  # syncs instrument on user action only
             horizontal=True,
             label_visibility="collapsed",
         )
-        if choice != st.session_state.instrument:
-            st.session_state.instrument = choice
-            st.cache_data.clear()
-            st.rerun()
 
     # ── Metric cards ──
     tfs    = cfg["timeframes"]
