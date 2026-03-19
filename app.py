@@ -47,9 +47,9 @@ st.markdown("""
     --accent-deep:   #a67c00;
     --accent-muted:  #7a5c1e;
     --accent-dim:    #3d2e0a;
-    --text-primary:  #f0e8d0;
-    --text-sec:      #a89060;
-    --text-muted:    #5a4a2a;
+    --text-primary:  #fdf6e3;
+    --text-sec:      #d4a844;
+    --text-muted:    #9a7c3a;
     --border:        #2a2118;
     --border-acc:    #3d2e0a;
     --orb-color:     rgba(213,160,23,0.05);
@@ -62,9 +62,9 @@ st.markdown("""
     --accent-deep:   #1d4ed8;
     --accent-muted:  #1e3a5f;
     --accent-dim:    #0f2040;
-    --text-primary:  #dbeafe;
-    --text-sec:      #7aa8d8;
-    --text-muted:    #2a3f5a;
+    --text-primary:  #e8f4ff;
+    --text-sec:      #90c0f0;
+    --text-muted:    #5a82a8;
     --border:        #141e2e;
     --border-acc:    #0f2040;
     --orb-color:     rgba(59,130,246,0.04);
@@ -174,7 +174,7 @@ st.markdown("""
   /* ── Metric cards ── */
   .cards-row { display: flex; gap: 0.8rem; margin: 1.2rem 0 0.4rem; }
   .metric-card {
-    flex: 1; background: var(--obs2); border: 1px solid var(--border);
+    flex: 1; background: var(--obs3); border: 1px solid var(--border-acc);
     border-radius: 6px; padding: 0.9rem 1rem; position: relative; overflow: hidden;
   }
   .metric-card::before {
@@ -184,14 +184,14 @@ st.markdown("""
   .metric-card.bear::before { background: linear-gradient(90deg, var(--bear-red),  transparent); }
   .metric-card.neu::before  { background: linear-gradient(90deg, var(--accent-mid),transparent); }
   .mc-label {
-    font-size: 0.56rem; letter-spacing: 0.2em; text-transform: uppercase;
-    color: var(--text-muted); margin-bottom: 0.3rem;
+    font-size: 0.58rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--accent-mid); margin-bottom: 0.3rem; font-weight: 500;
   }
   .mc-value {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 1.35rem; font-weight: 600; line-height: 1.1;
+    font-size: 1.45rem; font-weight: 700; line-height: 1.1;
   }
-  .mc-sub { font-size: 0.62rem; color: var(--text-muted); margin-top: 0.2rem; }
+  .mc-sub { font-size: 0.64rem; color: var(--text-sec); margin-top: 0.2rem; font-weight: 500; }
   .bull-text { color: var(--bull-green); }
   .bear-text { color: var(--bear-red); }
   .acc-text  { color: var(--accent); }
@@ -204,7 +204,7 @@ st.markdown("""
 
   /* ── Main table ── */
   .tf-table {
-    background: var(--obs2); border: 1px solid var(--border);
+    background: var(--obs2); border: 1px solid var(--border-acc);
     border-radius: 8px; overflow: hidden; margin-bottom: 1.2rem;
     animation: fadeUp 0.3s ease both;
   }
@@ -212,8 +212,8 @@ st.markdown("""
     display: grid; grid-template-columns: 88px 130px 155px 130px 130px 1fr;
     padding: 0.6rem 1.25rem; background: var(--obs3);
     border-bottom: 1px solid var(--border-acc);
-    font-size: 0.54rem; letter-spacing: 0.2em; text-transform: uppercase;
-    color: var(--accent-muted);
+    font-size: 0.56rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--accent-mid); font-weight: 600;
   }
   .tf-row {
     display: grid; grid-template-columns: 88px 130px 155px 130px 130px 1fr;
@@ -228,8 +228,8 @@ st.markdown("""
   .tf-row.rbull::before { background: var(--bull-green); opacity: 0.55; }
   .tf-row.rbear::before { background: var(--bear-red);   opacity: 0.55; }
   .tf-name {
-    font-family: 'DM Mono', monospace; font-size: 0.78rem; font-weight: 500;
-    color: var(--text-sec); letter-spacing: 0.04em;
+    font-family: 'DM Mono', monospace; font-size: 0.82rem; font-weight: 700;
+    color: var(--text-primary); letter-spacing: 0.04em;
   }
   .bias-badge {
     display: inline-flex; align-items: center; gap: 0.3rem;
@@ -242,10 +242,10 @@ st.markdown("""
   .str-wrap { display:flex; align-items:center; gap:0.5rem; }
   .str-bg { width:60px; height:3px; background:var(--obs4); border-radius:2px; }
   .str-fill { height:100%; border-radius:2px; }
-  .str-lbl { font-size:0.63rem; color:var(--text-muted); }
+  .str-lbl { font-size:0.65rem; color:var(--text-primary); font-weight:600; }
   .dist-val { font-family:'DM Mono',monospace; font-size:0.76rem; font-weight:500; }
-  .brk-lvl  { font-family:'DM Mono',monospace; font-size:0.68rem; color:var(--text-muted); }
-  .stinfo   { font-family:'DM Mono',monospace; font-size:0.62rem; color:var(--text-muted); line-height:1.6; }
+  .brk-lvl  { font-family:'DM Mono',monospace; font-size:0.7rem; color:var(--text-sec); font-weight:500; }
+  .stinfo   { font-family:'DM Mono',monospace; font-size:0.64rem; color:var(--text-sec); line-height:1.7; font-weight:500; }
 
   /* ── Right panel ── */
   .rpanel {
@@ -258,14 +258,14 @@ st.markdown("""
     background: linear-gradient(90deg, var(--accent-dim), transparent);
   }
   .rp-eyebrow {
-    font-size:0.54rem; letter-spacing:0.22em; text-transform:uppercase;
-    color:var(--accent-muted); margin-bottom:0.65rem;
+    font-size:0.56rem; letter-spacing:0.22em; text-transform:uppercase;
+    color:var(--accent-mid); margin-bottom:0.65rem; font-weight:600;
   }
   .align-score {
     font-family:'Cormorant Garamond',serif;
     font-size:2.1rem; font-weight:700; line-height:1;
   }
-  .align-lbl { font-size:0.7rem; color:var(--text-muted); margin-top:0.1rem; }
+  .align-lbl { font-size:0.72rem; color:var(--text-sec); margin-top:0.1rem; font-weight:500; }
   .dots-row { display:flex; gap:0.38rem; margin-top:0.75rem; flex-wrap:wrap; }
   .adot {
     width:25px; height:25px; border-radius:50%;
@@ -284,18 +284,18 @@ st.markdown("""
   .sc-bull  { background:rgba(74,222,128,0.04);  border-color:rgba(74,222,128,0.2); }
   .sc-bear  { background:rgba(248,113,113,0.04); border-color:rgba(248,113,113,0.2); }
   .sc-mixed { background:rgba(var(--accent-dim),0.04); border-color:rgba(213,160,23,0.2); }
-  .sig-eye  { font-size:0.54rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.35rem; }
+  .sig-eye  { font-size:0.56rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent-mid); margin-bottom:0.35rem; font-weight:600; }
   .sig-title {
     font-family:'Cormorant Garamond',serif;
     font-size:1.2rem; font-weight:600; line-height:1.25;
   }
-  .sig-desc { font-size:0.68rem; color:var(--text-sec); margin-top:0.35rem; line-height:1.6; }
+  .sig-desc { font-size:0.7rem; color:var(--text-primary); margin-top:0.35rem; line-height:1.65; font-weight:400; }
   .sig-tags { display:flex; gap:0.38rem; margin-top:0.7rem; flex-wrap:wrap; }
   .sig-tag {
     padding:0.16rem 0.52rem; border-radius:2px;
     font-size:0.57rem; font-family:'DM Mono',monospace;
-    background:rgba(255,255,255,0.03); color:var(--text-muted);
-    border:1px solid var(--border);
+    background:rgba(255,255,255,0.07); color:var(--text-sec);
+    border:1px solid var(--accent-dim);
   }
 
   /* ── Footer ── */
@@ -440,8 +440,11 @@ def fetch_candles(ticker: str):
         if "1h"      in dfs: data["1H"]  = dfs["1h"]
         if "1h_long" in dfs:
             df4 = dfs["1h_long"].resample("4h").agg({
-                "Open":"first","High":"max","Low":"min",
-                "Close":"last","Volume":"sum"
+                "Open":  lambda x: x.iloc[0]  if len(x) > 0 else float("nan"),
+                "High":  "max",
+                "Low":   "min",
+                "Close": lambda x: x.iloc[-1] if len(x) > 0 else float("nan"),
+                "Volume":"sum"
             }).dropna()
             data["4H"] = df4
         if "1d" in dfs: data["1D"] = dfs["1d"]
@@ -649,7 +652,7 @@ def build_table(results, cfg):
         if not r:
             rows += f"""<div class="tf-row">
               <div class="tf-name">{label}</div>
-              <div style="color:var(--text-muted);font-size:0.7rem">No data</div>
+              <div style="color:var(--text-sec);font-size:0.7rem;font-weight:500">No data</div>
               <div></div><div></div><div></div><div></div></div>"""
             continue
         bias = r["bias"]
@@ -868,14 +871,14 @@ def _theme_vars(theme):
         return """
           --accent:#f5c842; --accent-mid:#d4a017; --accent-deep:#a67c00;
           --accent-muted:#7a5c1e; --accent-dim:#3d2e0a;
-          --text-primary:#f0e8d0; --text-sec:#a89060; --text-muted:#5a4a2a;
+          --text-primary:#fdf6e3; --text-sec:#d4a844; --text-muted:#9a7c3a;
           --border:#2a2118; --border-acc:#3d2e0a; --orb-color:rgba(213,160,23,0.05);
         """
     else:
         return """
           --accent:#60a5fa; --accent-mid:#3b82f6; --accent-deep:#1d4ed8;
           --accent-muted:#1e3a5f; --accent-dim:#0f2040;
-          --text-primary:#dbeafe; --text-sec:#7aa8d8; --text-muted:#2a3f5a;
+          --text-primary:#e8f4ff; --text-sec:#90c0f0; --text-muted:#5a82a8;
           --border:#141e2e; --border-acc:#0f2040; --orb-color:rgba(59,130,246,0.04);
         """
 
