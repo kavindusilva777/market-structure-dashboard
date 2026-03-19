@@ -429,7 +429,11 @@ def fetch_candles(ticker: str):
             if not df.empty:
                 if isinstance(df.columns, pd.MultiIndex):
                     df.columns = df.columns.get_level_values(0)
-                dfs[key] = df[["Open","High","Low","Close","Volume"]].dropna()
+                df2 = df[["Open","High","Low","Close","Volume"]].copy()
+                # Squeeze any residual MultiIndex columns to 1D
+                if isinstance(df2.columns, pd.MultiIndex):
+                    df2.columns = df2.columns.get_level_values(0)
+                dfs[key] = df2.dropna()
 
         if "15m"     in dfs: data["15M"] = dfs["15m"]
         if "30m"     in dfs: data["30M"] = dfs["30m"]
@@ -449,11 +453,39 @@ def fetch_candles(ticker: str):
 
 # ─── Market Structure Engine ──────────────────────────────────────────────────
 
+
+def prefetch_all():
+    """
+    Pre-fetch candles for ALL instruments in parallel threads at startup.
+    Results land in Streamlit's cache so switching is instant — no re-download.
+    """
+    import threading
+    threads = []
+    for inst_cfg in INSTRUMENTS.values():
+        t = threading.Thread(target=fetch_candles, args=(inst_cfg["ticker"],), daemon=True)
+        threads.append(t)
+        t.start()
+    # Also warm up the XAU live price
+    t2 = threading.Thread(target=fetch_xau_live_price, daemon=True)
+    threads.append(t2)
+    t2.start()
+    # Warm up NQ price too
+    t3 = threading.Thread(target=fetch_yf_price, args=("NQ=F",), daemon=True)
+    threads.append(t3)
+    t3.start()
+    for t in threads:
+        t.join(timeout=20)
+
 def analyze_structure(df):
     if df is None or len(df) < 10:
         return None
-    closes = df["Close"].values.astype(float)
+    # Force clean 1D float array — yfinance can return 2D arrays with MultiIndex
+    raw = df["Close"].values
+    closes = np.array(raw, dtype=float).flatten()
+    closes = closes[~np.isnan(closes)]
     n = len(closes)
+    if n < 10:
+        return None
 
     # Swing points — closes ONLY, no wicks
     sh, sl = [], []
@@ -516,6 +548,8 @@ def analyze_structure(df):
 
 
 def _simple(closes):
+    closes = np.array(closes, dtype=float).flatten()
+    closes = closes[~np.isnan(closes)]
     n, cur = len(closes), closes[-1]
     mid = closes[n//2]
     bias = "Bullish" if cur > mid else "Bearish"
@@ -697,11 +731,19 @@ def main():
         st.session_state.refresh_count = 0
     if "instrument" not in st.session_state:
         st.session_state.instrument = "XAU/USD"
+    if "prefetched" not in st.session_state:
+        st.session_state.prefetched = False
+
+    # ── Pre-fetch ALL instruments on first load so switching is instant ──
+    if not st.session_state.prefetched:
+        prefetch_all()
+        st.session_state.prefetched = True
 
     # ── Auto-refresh every 10s ──
     if time.time() - st.session_state.last_refresh > 10:
         st.session_state.last_refresh = time.time()
         st.session_state.refresh_count += 1
+        st.session_state.prefetched = False   # re-prefetch on next cycle
         st.cache_data.clear()
         st.rerun()
 
