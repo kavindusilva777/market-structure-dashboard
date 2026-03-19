@@ -457,28 +457,6 @@ def fetch_candles(ticker: str):
 # ─── Market Structure Engine ──────────────────────────────────────────────────
 
 
-def prefetch_all():
-    """
-    Pre-fetch candles for ALL instruments in parallel threads at startup.
-    Results land in Streamlit's cache so switching is instant — no re-download.
-    """
-    import threading
-    threads = []
-    for inst_cfg in INSTRUMENTS.values():
-        t = threading.Thread(target=fetch_candles, args=(inst_cfg["ticker"],), daemon=True)
-        threads.append(t)
-        t.start()
-    # Also warm up the XAU live price
-    t2 = threading.Thread(target=fetch_xau_live_price, daemon=True)
-    threads.append(t2)
-    t2.start()
-    # Warm up NQ price too
-    t3 = threading.Thread(target=fetch_yf_price, args=("NQ=F",), daemon=True)
-    threads.append(t3)
-    t3.start()
-    for t in threads:
-        t.join(timeout=20)
-
 def analyze_structure(df):
     if df is None or len(df) < 10:
         return None
@@ -734,23 +712,38 @@ def main():
         st.session_state.refresh_count = 0
     if "instrument" not in st.session_state:
         st.session_state.instrument = "XAU/USD"
-    if "prefetched" not in st.session_state:
-        st.session_state.prefetched = False
+    if "all_candles" not in st.session_state:
+        st.session_state.all_candles = {}
+    if "all_prices" not in st.session_state:
+        st.session_state.all_prices = {}
 
-    # ── Pre-fetch ALL instruments on first load so switching is instant ──
-    if not st.session_state.prefetched:
-        prefetch_all()
-        st.session_state.prefetched = True
+    # ── Load ALL instruments into session_state on first run ──
+    # session_state persists across reruns so switching is always instant.
+    # Data is stored directly — no cache dependency, no threading.
+    if not st.session_state.all_candles:
+        for inst_key, inst_cfg in INSTRUMENTS.items():
+            st.session_state.all_candles[inst_key] = fetch_candles(inst_cfg["ticker"])
+        # Prices
+        xp, xc, xpct, xl = fetch_xau_live_price()
+        st.session_state.all_prices["XAU/USD"] = (xp, xc, xpct, xl)
+        np_, nc, npct = fetch_yf_price("NQ=F")
+        st.session_state.all_prices["NQ Futures"] = (np_, nc, npct, False)
 
-    # ── Auto-refresh every 10s ──
+    # ── Auto-refresh every 10s — refetch in background, update session_state ──
     if time.time() - st.session_state.last_refresh > 10:
         st.session_state.last_refresh = time.time()
         st.session_state.refresh_count += 1
-        st.session_state.prefetched = False   # re-prefetch on next cycle
+        # Clear cache then refetch all instruments fresh
         st.cache_data.clear()
+        for inst_key, inst_cfg in INSTRUMENTS.items():
+            st.session_state.all_candles[inst_key] = fetch_candles(inst_cfg["ticker"])
+        xp, xc, xpct, xl = fetch_xau_live_price()
+        st.session_state.all_prices["XAU/USD"] = (xp, xc, xpct, xl)
+        np_, nc, npct = fetch_yf_price("NQ=F")
+        st.session_state.all_prices["NQ Futures"] = (np_, nc, npct, False)
         st.rerun()
 
-    cfg  = INSTRUMENTS[st.session_state.instrument]
+    cfg   = INSTRUMENTS[st.session_state.instrument]
     theme = cfg["theme"]
 
     # ── Inject theme class onto root ──
@@ -766,18 +759,10 @@ def main():
     <div class="bg-orb"></div>
     """, unsafe_allow_html=True)
 
-    # ── Fetch data ──
-    ticker = cfg["ticker"]
-    candles = fetch_candles(ticker)
-
-    if cfg["live_api"]:
-        price, change, pct, is_live = fetch_xau_live_price()
-        if price is None:
-            price, change, pct = fetch_yf_price(ticker)
-            is_live = False
-    else:
-        price, change, pct = fetch_yf_price(ticker)
-        is_live = False
+    # ── Pull from session_state — always instant, no network call on switch ──
+    candles  = st.session_state.all_candles.get(st.session_state.instrument, {})
+    price_data = st.session_state.all_prices.get(st.session_state.instrument, (None, None, None, False))
+    price, change, pct, is_live = price_data
 
     # ── Analyze structure ──
     results = {tf: analyze_structure(candles.get(tf)) for tf in cfg["timeframes"]}
